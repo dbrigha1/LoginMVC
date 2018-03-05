@@ -13,6 +13,7 @@ using Microsoft.AspNet.Identity.Owin;
 
 namespace LoginMVC.Controllers
 {
+    [Authorize]
     public class UsersController : Controller
     {
        // private ApplicationDbContext db = new ApplicationDbContext();
@@ -109,7 +110,20 @@ namespace LoginMVC.Controllers
             {
                 return HttpNotFound();
             }
-            return View(applicationUser);
+            ApplicationDbContext context = new ApplicationDbContext();
+            UserViewModel userModel = new UserViewModel
+            {
+                Id = applicationUser.Id,
+                UserRole = applicationUser.UserRole,
+                Email = applicationUser.Email,
+               // PasswordHash = applicationUser.PasswordHash,
+               // SecurityStamp = applicationUser.SecurityStamp,
+                PhoneNumber = applicationUser.PhoneNumber,
+                TwoFactorEnabled = applicationUser.TwoFactorEnabled,
+                UserName = applicationUser.UserName,
+                UserRoleList = context.Roles.Select(x=> new SelectListItem {Value = x.Name, Text = x.Name })
+            };
+            return View(userModel);
         }
 
         // POST: Users/Edit/5
@@ -117,29 +131,29 @@ namespace LoginMVC.Controllers
         //// more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task <ActionResult> Edit([Bind(Include = "Id,UserRole,Email,EmailConfirmed,PasswordHash,SecurityStamp,PhoneNumber,PhoneNumberConfirmed,TwoFactorEnabled,LockoutEndDateUtc,LockoutEnabled,AccessFailedCount,UserName")] ApplicationUser applicationUser)
+        public async Task <ActionResult> Edit([Bind(Include = "Id,UserRole,UserRoleList,Email,EmailConfirmed,PasswordHash,SecurityStamp,PhoneNumber,PhoneNumberConfirmed,TwoFactorEnabled,LockoutEndDateUtc,LockoutEnabled,AccessFailedCount,UserName")] UserViewModel applicationUser)
         {
             if (ModelState.IsValid)
             {
                 // Get the existing student from the db
                 var user = await UserManager.FindByIdAsync(applicationUser.Id);
-                
-               // PhoneNumberConfirmed,TwoFactorEnabled,LockoutEndDateUtc,LockoutEnabled,AccessFailedCount,UserName
-                // Update it with the values from the view model
-               // user.Id = applicationUser.Id;
-              //  user.UserRole = applicationUser.UserRole;
-                user.Email = applicationUser.Email;
-                user.EmailConfirmed = applicationUser.EmailConfirmed;
-                user.PasswordHash = applicationUser.PasswordHash;
-                user.SecurityStamp = applicationUser.SecurityStamp;
-                user.PhoneNumber = applicationUser.PhoneNumber;
-                user.PhoneNumberConfirmed = applicationUser.PhoneNumberConfirmed;
-                user.TwoFactorEnabled = applicationUser.TwoFactorEnabled;
-                user.LockoutEndDateUtc = applicationUser.LockoutEndDateUtc;
-                user.LockoutEnabled = applicationUser.LockoutEnabled;
-                user.AccessFailedCount = applicationUser.AccessFailedCount;
-                user.UserName = applicationUser.UserName;
 
+                // Id,UserRole,Email,EmailConfirmed,PasswordHash,SecurityStamp,PhoneNumber,PhoneNumberConfirmed,TwoFactorEnabled,LockoutEndDateUtc,LockoutEnabled,AccessFailedCount,UserName
+                // Update it with the values from the view model
+                // user.Id = applicationUser.Id;
+                //  user.UserRole = applicationUser.UserRole;
+                user.Email = applicationUser.Email;
+                //user.EmailConfirmed = applicationUser.EmailConfirmed;
+                //user.PasswordHash = applicationUser.PasswordHash;
+                //user.SecurityStamp = applicationUser.SecurityStamp;
+                user.PhoneNumber = applicationUser.PhoneNumber;
+                //user.PhoneNumberConfirmed = applicationUser.PhoneNumberConfirmed;
+                user.TwoFactorEnabled = applicationUser.TwoFactorEnabled;
+                //user.LockoutEndDateUtc = applicationUser.LockoutEndDateUtc;
+                //user.LockoutEnabled = applicationUser.LockoutEnabled;
+                //user.AccessFailedCount = applicationUser.AccessFailedCount;
+                user.UserName = applicationUser.UserName;
+                //var selectedRole = applicationUser.UserRoleList.Where(x => x.Selected);
                 await UserManager.RemoveFromRoleAsync(user.Id, user.UserRole);
                 user.UserRole = applicationUser.UserRole;
                 await UserManager.AddToRoleAsync(user.Id, user.UserRole);  
